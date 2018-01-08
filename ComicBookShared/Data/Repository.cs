@@ -181,7 +181,15 @@ namespace ComicBookShared.Data
         /// <param name="comicBookId">The comic book ID to delete.</param>
         public static void DeleteComicBook(int comicBookId)
         {
-            // TODO
+            using (Context context = GetContext())
+            {
+                //ComicBook comicBook = context.ComicBooks.Find(comicBookId);
+                //context.ComicBooks.Remove(comicBook);
+                var comicBookToDelete = new ComicBook() { Id = comicBookId };
+                context.Entry(comicBookToDelete).State = EntityState.Deleted;
+
+                context.SaveChanges();
+            }
         }
     }
 }
