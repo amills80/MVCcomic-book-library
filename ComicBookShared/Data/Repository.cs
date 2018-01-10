@@ -43,6 +43,31 @@ namespace ComicBookShared.Data
                 .SingleOrDefault();
         }
 
+        public void AddComicBook(ComicBook comicBook)
+        {
+            _context.ComicBooks.Add(comicBook);
+            _context.SaveChanges();
+        }
+
+        public void UpdateComicBook(ComicBook comicBook)
+        {
+            _context.Entry(comicBook).State = EntityState.Modified;
+            _context.SaveChanges();
+        }
+
+        public void DeleteComicBook(ComicBook comicBook)
+        {
+            _context.Entry(comicBook).State = EntityState.Deleted;
+            _context.SaveChanges();
+        }
+
+        public bool ValidateDuplicateBook(ComicBook comicBook)
+        {
+            return _context.ComicBooks.Any(cb => cb.Id != comicBook.Id &&
+                                            cb.SeriesId == comicBook.SeriesId &&
+                                            cb.IssueNumber == comicBook.IssueNumber);
+        }
+
         public void AddComicBookArtist(ComicBookArtist comicBookArtist)
         {
             _context.ComicBookArtists.Add(comicBookArtist);
@@ -84,30 +109,8 @@ namespace ComicBookShared.Data
                 .OrderBy(r => r.Name).ToList();
         }
 
-        public void AddComicBook(ComicBook comicBook)
-        {
-            _context.ComicBooks.Add(comicBook);
-            _context.SaveChanges();
-        }
 
-        public void UpdateComicBook(ComicBook comicBook)
-        {
-            _context.Entry(comicBook).State = EntityState.Modified;
-            _context.SaveChanges();
-        }
-
-        public void DeleteComicBook(ComicBook comicBook)
-        {
-            _context.Entry(comicBook).State = EntityState.Deleted;
-            _context.SaveChanges();
-        }
-
-        public bool ValidateDuplicateBook(ComicBook comicBook)
-        {
-            return _context.ComicBooks.Any(cb => cb.Id != comicBook.Id &&
-                                            cb.SeriesId == comicBook.SeriesId &&
-                                            cb.IssueNumber == comicBook.IssueNumber);
-        }
+   
 
         /*Code from edit : GetComicBook()
             return _context.ComicBooks

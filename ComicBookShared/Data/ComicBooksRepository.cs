@@ -8,7 +8,7 @@ namespace ComicBookShared.Data
 {
     public class ComicBooksRepository
     {
-        private Context context = null;
+        private Context _context = null;
 
         public ComicBooksRepository(Context context)
         {
