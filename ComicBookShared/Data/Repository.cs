@@ -16,14 +16,7 @@ namespace ComicBookShared.Data
         {
             _context = context;
         }
-
-        public IList<Series> GetSeriesList()
-        {
-            return _context.Series
-                    .OrderBy(s => s.Title)
-                    .ToList();
-        }
-
+        
         public IList<Artist> GetArtists()
         {
             return _context.Artists
@@ -35,34 +28,6 @@ namespace ComicBookShared.Data
         {
             return _context.Roles
                     .OrderBy(r => r.Name).ToList();
-        }
-
-        public Series GetSeriesById(int id)
-        {
-            return _context.Series
-                    .Include(s => s.ComicBooks.Select(cb => cb.Series))
-                    .Where(s => s.Id == id)
-                    .SingleOrDefault();
-        }
-
-        public void AddSeries(Series series)
-        {
-            _context.Series.Add(series);
-            _context.SaveChanges();
-        }
-
-        // TODO Check to see if this can be removed
-        //public void SaveChanges()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        public void DeleteSeries(int id)
-        {
-            var set = _context.Set<Series>();
-            var entity = set.Find(id);
-            set.Remove(entity);
-            _context.SaveChanges();
         }
     }
 }
