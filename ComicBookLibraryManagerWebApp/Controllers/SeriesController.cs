@@ -1,6 +1,8 @@
-﻿using ComicBookShared.Models;
+﻿using ComicBookShared.Data;
+using ComicBookShared.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -11,13 +13,31 @@ namespace ComicBookLibraryManagerWebApp.Controllers
     /// <summary>
     /// Controller for the "Series" section of the website.
     /// </summary>
-    public class SeriesController : Controller
+    public class SeriesController : BaseController
     {
+        //TODO build Series Repo and connect repo to controller via strings placed below.
+        //TODO make sure that this can go
+        
+            //private SeriesRepository _seriesRepository;
+        //public SeriesController()
+        //{
+        //    _seriesRepository = new SeriesRepository(Context);
+        //}
+
+        //private Context _context = null;
+        //private bool _disposed = false;
+        //public SeriesController()
+        //{
+        //    _context = new Context();
+        //}
+
         public ActionResult Index()
         {
-            // TODO Get the series list.
-            var series = new List<Series>();
-
+            // TODO make sure this can go
+            //var series = Context.Series
+            //        .OrderBy(s => s.Title)
+            //        .ToList();
+            var series = Repository.GetSeriesList();
             return View(series);
         }
 
@@ -28,9 +48,12 @@ namespace ComicBookLibraryManagerWebApp.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            // TODO Get the series.
-            var series = new Series();
-
+            //var series = Context.Series
+            //        .Include(s => s.ComicBooks.Select(cb => cb.Series))
+            //        .Where(s => s.Id == id)
+            //        .SingleOrDefault(); 
+            var series = Repository.GetSeriesById((int)id);
+            
             if (series == null)
             {
                 return HttpNotFound();
@@ -38,8 +61,7 @@ namespace ComicBookLibraryManagerWebApp.Controllers
 
             // Sort the comic books.
             series.ComicBooks = series.ComicBooks
-                .OrderByDescending(cb => cb.IssueNumber)
-                .ToList();
+                .OrderByDescending(cb => cb.IssueNumber).ToList();
 
             return View(series);
         }
@@ -58,7 +80,7 @@ namespace ComicBookLibraryManagerWebApp.Controllers
 
             if (ModelState.IsValid)
             {
-                // TODO Add the series.
+                Repository.AddSeries(series);
 
                 TempData["Message"] = "Your series was successfully added!";
 
@@ -75,8 +97,10 @@ namespace ComicBookLibraryManagerWebApp.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            // TODO Get the series.
-            var series = new Series();
+            //var series = Context.Series
+            //        .Where(s => s.Id == id)
+            //        .SingleOrDefault(); ;
+            var series = Repository.GetSeriesById((int)id);
 
             if (series == null)
             {
@@ -87,14 +111,19 @@ namespace ComicBookLibraryManagerWebApp.Controllers
         }
 
         [HttpPost]
+        // TODO REPAIR this 
         public ActionResult Edit(Series series)
         {
             ValidateSeries(series);
 
             if (ModelState.IsValid)
             {
-                // TODO Update the series.
+                var seriesToUpdate = series;
 
+                // TODO Update the series.
+                Context.Entry(seriesToUpdate).State = EntityState.Modified;
+                Context.SaveChanges();
+                
                 TempData["Message"] = "Your series was successfully updated!";
 
                 return RedirectToAction("Detail", new { id = series.Id });
@@ -110,8 +139,10 @@ namespace ComicBookLibraryManagerWebApp.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            // TODO Get the series.
-            var series = new Series();
+            //var series = Context.Series
+            //        .Where(s => s.Id == id)
+            //        .SingleOrDefault(); 
+            var series = Repository.GetSeriesById((int)id);
 
             if (series == null)
             {
@@ -124,7 +155,13 @@ namespace ComicBookLibraryManagerWebApp.Controllers
         [HttpPost]
         public ActionResult Delete(int id)
         {
-            // TODO Delete the series.
+            var seriesToDelete = new Series() { Id = id };
+
+            //var set = Context.Set<Series>();
+            //var entity = set.Find(id);
+            //set.Remove(entity);
+            //Context.SaveChanges();
+            Repository.DeleteSeries((int)id);
 
             TempData["Message"] = "Your series was successfully deleted!";
 
@@ -138,17 +175,38 @@ namespace ComicBookLibraryManagerWebApp.Controllers
         /// <param name="series">The series to validate.</param>
         private void ValidateSeries(Series series)
         {
-            //// If there aren't any "Title" field validation errors...
-            //if (ModelState.IsValidField("Title"))
-            //{
-            //    // Then make sure that the provided title is unique.
-            //    // TODO Call method to check if the title is available.
-            //    if (false)
-            //    {
-            //        ModelState.AddModelError("Title",
-            //            "The provided Title is in use by another series.");
-            //    }
-            //}
+            // If there aren't any "Title" field validation errors...
+            if (ModelState.IsValidField("Series.Title"))
+            {
+                // TODO Refactor into series repo
+                // Then make sure that the provided title is unique.
+               if (Context.Series.Any(s => s.Id != series.Id &&
+                        s.Title == series.Title))
+                {
+                    ModelState.AddModelError("Series.IdNumber",
+                        "The provided Id Number has already been entered for the selected Series.");
+                }
+                ////TODO make sure that this can go
+                //if (false)
+                //{
+                //    ModelState.AddModelError("Title",
+                //        "The provided Title is in use by another series.");
+                //}
+            }
         }
+
+        //TODO make sure that this can go
+        //protected override void Dispose(bool disposing)
+        //{
+        //    if (_disposed)
+        //        return;
+        //    if (disposing)
+        //    {
+        //        Context.Dispose();
+        //    }
+
+        //    _disposed = true;
+        //    base.Dispose(disposing);
+        //}
     }
 }

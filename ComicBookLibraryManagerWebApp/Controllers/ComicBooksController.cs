@@ -45,7 +45,8 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             }
 
             // Sort the artists.
-            comicBook.Artists = comicBook.Artists.OrderBy(a => a.Role.Name).ToList();
+            comicBook.Artists = comicBook.Artists
+                .OrderBy(a => a.Role.Name).ToList();
 
             return View(comicBook);
         }
