@@ -19,5 +19,7 @@ namespace ComicBookShared.Models
         public ComicBook ComicBook { get; set; }
         public Artist Artist { get; set; }
         public Role Role { get; set; }
+        public ICollection<ComicBookArtist> ComicBooks { get; set; }
+        //public ComicBook ComicBooks { get; set; }
     }
 }
