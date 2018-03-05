@@ -35,14 +35,13 @@ namespace ComicBookLibraryManagerWebApp.ViewModels
         /// <summary>
         /// Initializes the view model.
         /// </summary>
-        public void Init(Repository repository, 
-            ArtistsRepository artistsRepository)
+        public void Init()
         {
             ArtistSelectListItems = new SelectList(
-                artistsRepository.GetList(), 
+                new List<Artist>(), // TODO Get the artitsts list.
                 "Id", "Name");
             RoleSelectListItems = new SelectList(
-                repository.GetRoles(), 
+                new List<Role>(), // TODO Get the roles list.
                 "Id", "Name");
         }
     }

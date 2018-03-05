@@ -1,35 +1,26 @@
-﻿using ComicBookLibraryManagerWebApp.ViewModels;
-using ComicBookShared.Data;
-using ComicBookShared.Models;
-using System.Data.Entity;
+﻿using ComicBookShared.Models;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using System.Data.Entity;
+using ComicBookLibraryManagerWebApp.ViewModels;
+using System.Net;
+using System.Data.Entity.Infrastructure;
 
 namespace ComicBookLibraryManagerWebApp.Controllers
 {
     /// <summary>
     /// Controller for the "Comic Books" section of the website.
     /// </summary>
-    public class ComicBooksController : BaseController
+    public class ComicBooksController : Controller
     {
-        private ComicBooksRepository _comicBooksRepository = null;
-        private SeriesRepository _seriesRepository = null;
-        private ArtistsRepository _artistsRepository = null;
-
-        public ComicBooksController()
-        {
-            _comicBooksRepository = new ComicBooksRepository(Context);
-            _seriesRepository = new SeriesRepository(Context);
-            _artistsRepository = new ArtistsRepository(Context);
-        }
         public ActionResult Index()
         {
-            var comicBooks = _comicBooksRepository.GetList();
+            // TODO Get the comic books list.
+            // Include the "Series" navigation property.
+            var comicBooks = new List<ComicBook>();
 
             return View(comicBooks);
         }
@@ -40,8 +31,10 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            
-            var comicBook = _comicBooksRepository.Get((int)id);
+
+            // TODO Get the comic book.
+            // Include the "Series", "Artists.Artist", and "Artists.Role" navigation properties.
+            var comicBook = new ComicBook();
 
             if (comicBook == null)
             {
@@ -49,8 +42,7 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             }
 
             // Sort the artists.
-            comicBook.Artists = comicBook.Artists
-                .OrderBy(a => a.Role.Name).ToList();
+            comicBook.Artists = comicBook.Artists.OrderBy(a => a.Role.Name).ToList();
 
             return View(comicBook);
         }
@@ -58,8 +50,9 @@ namespace ComicBookLibraryManagerWebApp.Controllers
         public ActionResult Add()
         {
             var viewModel = new ComicBooksAddViewModel();
-            
-            viewModel.Init(Repository, _seriesRepository, _artistsRepository);
+
+            // TODO Pass the Context class to the view model "Init" method.
+            viewModel.Init();
 
             return View(viewModel);
         }
@@ -74,14 +67,15 @@ namespace ComicBookLibraryManagerWebApp.Controllers
                 var comicBook = viewModel.ComicBook;
                 comicBook.AddArtist(viewModel.ArtistId, viewModel.RoleId);
 
-                _comicBooksRepository.Add(comicBook);
-               
+                // TODO Add the comic book.
+
                 TempData["Message"] = "Your comic book was successfully added!";
 
                 return RedirectToAction("Detail", new { id = comicBook.Id });
             }
-            
-            viewModel.Init(Repository, _seriesRepository, _artistsRepository);
+
+            // TODO Pass the Context class to the view model "Init" method.
+            viewModel.Init();
 
             return View(viewModel);
         }
@@ -92,9 +86,9 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            
-            var comicBook = _comicBooksRepository.Get((int)id, 
-                includeRelatedEntities: false);
+
+            // TODO Get the comic book.
+            var comicBook = new ComicBook();
 
             if (comicBook == null)
             {
@@ -105,7 +99,7 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             {
                 ComicBook = comicBook
             };
-            viewModel.Init(Repository, _seriesRepository, _artistsRepository);
+            viewModel.Init();
 
             return View(viewModel);
         }
@@ -119,14 +113,14 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             {
                 var comicBook = viewModel.ComicBook;
 
-                _comicBooksRepository.Update(comicBook);
+                // TODO Update the comic book.
 
                 TempData["Message"] = "Your comic book was successfully updated!";
 
                 return RedirectToAction("Detail", new { id = comicBook.Id });
             }
 
-            viewModel.Init(Repository, _seriesRepository, _artistsRepository);
+            viewModel.Init();
 
             return View(viewModel);
         }
@@ -137,8 +131,10 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            
-            var comicBook = _comicBooksRepository.Get((int)id);
+
+            // TODO Get the comic book.
+            // Include the "Series" navigation property.
+            var comicBook = new ComicBook();
 
             if (comicBook == null)
             {
@@ -151,8 +147,7 @@ namespace ComicBookLibraryManagerWebApp.Controllers
         [HttpPost]
         public ActionResult Delete(int id)
         {
-            var comicBook = new ComicBook() { Id = id };
-            _comicBooksRepository.Delete(id);
+            // TODO Delete the comic book.
 
             TempData["Message"] = "Your comic book was successfully deleted!";
 
@@ -166,18 +161,18 @@ namespace ComicBookLibraryManagerWebApp.Controllers
         /// <param name="comicBook">The comic book to validate.</param>
         private void ValidateComicBook(ComicBook comicBook)
         {
-            // If there aren't any "SeriesId" and "IssueNumber" field validation errors...
-
-            if (ModelState.IsValidField("ComicBook.SeriesId") &&
-                ModelState.IsValidField("ComicBook.IssueNumber"))
-            {
-                // Then make sure that the provided issue number is unique for the provided series.
-                if (_comicBooksRepository.ValidateDuplicateBook(comicBook))
-                {
-                    ModelState.AddModelError("ComicBook.IssueNumber",
-                        "The provided Issue Number has already been entered for the selected Series.");
-                }
-            }
+            //// If there aren't any "SeriesId" and "IssueNumber" field validation errors...
+            //if (ModelState.IsValidField("ComicBook.SeriesId") &&
+            //    ModelState.IsValidField("ComicBook.IssueNumber"))
+            //{
+            //    // Then make sure that the provided issue number is unique for the provided series.
+            //    // TODO Call method to check if the issue number is available for this comic book.
+            //    if (false)
+            //    {
+            //        ModelState.AddModelError("ComicBook.IssueNumber",
+            //            "The provided Issue Number has already been entered for the selected Series.");
+            //    }
+            //}
         }
     }
 }
