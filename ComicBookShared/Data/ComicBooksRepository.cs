@@ -41,6 +41,17 @@ namespace ComicBookShared.Data
                 .SingleOrDefault();
         }
         
+        public void Delete(int id, byte[] rowVersion)
+        {
+            var comicBook = new ComicBook()
+            {
+                Id = id,
+                RowVersion = rowVersion
+            };
+            Context.Entry(comicBook).State = EntityState.Deleted;
+            Context.SaveChanges();
+        }
+
         public bool ValidateDuplicateBook(ComicBook comicBook)
         {
             return Context.ComicBooks.Any(cb => cb.Id != comicBook.Id &&

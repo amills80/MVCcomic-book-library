@@ -119,11 +119,45 @@ namespace ComicBookLibraryManagerWebApp.Controllers
             {
                 var comicBook = viewModel.ComicBook;
 
-                _comicBooksRepository.Update(comicBook);
+                ///<summary>
+                ///Add concurrency to Edit post method.  
+                ///If another user has updated or deleted the object before this user has, 
+                ///A message and redirect is laid out. 
+                ///</summary>
+                /// 
 
-                TempData["Message"] = "Your comic book was successfully updated!";
+                try
+                {
+                    _comicBooksRepository.Update(comicBook);
 
-                return RedirectToAction("Detail", new { id = comicBook.Id });
+                    TempData["Message"] = "Your comic book was successfully updated!";
+
+                    return RedirectToAction("Detail", new { id = comicBook.Id });
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    string message = null;
+
+                    var entityPropertyValues = ex.Entries.Single().GetDatabaseValues();
+                    if (entityPropertyValues == null)
+                    {
+                        message = 
+                            "The comic book being updated has been deleted by another user. Click cancel button to return to the list page.";
+
+                        viewModel.ComicBookHasBeenDeleted = true;
+                    }
+                    else
+                    {
+                        message = 
+                            "The comic book being updated has already been updated by another user. If you still want to make your changes, click the save button.";
+
+                        comicBook.RowVersion =
+                            ((ComicBook)entityPropertyValues.ToObject()).RowVersion;
+                    }
+
+                    ModelState.AddModelError(string.Empty, message);
+                    //throw;
+                }
             }
 
             viewModel.Init(Repository, _seriesRepository, _artistsRepository);
@@ -145,18 +179,51 @@ namespace ComicBookLibraryManagerWebApp.Controllers
                 return HttpNotFound();
             }
 
-            return View(comicBook);
+            var viewModel = new ComicBooksDeleteViewModel()
+            {
+                ComicBook = comicBook
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
-        public ActionResult Delete(int id)
+        public ActionResult Delete(ComicBooksDeleteViewModel viewModel)
         {
-            var comicBook = new ComicBook() { Id = id };
-            _comicBooksRepository.Delete(id);
+            try
+            {
+                _comicBooksRepository.Delete(viewModel.ComicBook.Id
+                    , viewModel.ComicBook.RowVersion);
 
-            TempData["Message"] = "Your comic book was successfully deleted!";
+                TempData["Message"] = "Your comic book was successfully deleted!";
 
-            return RedirectToAction("Index");
+                return RedirectToAction("Index");
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                string message = null;
+
+                var entityPropertyValues = ex.Entries.Single().GetDatabaseValues();
+                if (entityPropertyValues == null)
+                {
+                    message =
+                        "The comic book being deleted has been deleted by another user. Click cancel button to return to the list page.";
+
+                    viewModel.ComicBookHasBeenDeleted = true;
+                }
+                else
+                {
+                    message =
+                        "The comic book being deleted has already been updated by another user. " +
+                        "If you still want to delete, click the save button again.";
+
+                    viewModel.ComicBook.RowVersion =
+                        ((ComicBook)entityPropertyValues.ToObject()).RowVersion;
+                }
+                ModelState.AddModelError(string.Empty, message);
+                return View(viewModel);
+            }
+            //var comicBook = new ComicBook() { Id = id };
         }
 
         /// <summary>
