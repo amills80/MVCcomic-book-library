@@ -18,6 +18,8 @@ namespace ComicBookShared.Data
         public override IList<ComicBook> GetList()
         {
             return Context.ComicBooks
+                // Toggle off Entity Tracking w AsNoTracking()
+                    .AsNoTracking()
                     .Include(cb => cb.Series)
                     .OrderBy(cb => cb.Series.Title)
                     .ThenBy(cb => cb.IssueNumber)
@@ -55,7 +57,7 @@ namespace ComicBookShared.Data
             return comicBook;
 
 
-            ////ORIGINAL Query Method 
+            ////ORIGINAL  Eagerly-loading Query Method 
             //var comicBooks = Context.ComicBooks.AsQueryable();
 
             //if (includeRelatedEntities)
@@ -70,7 +72,7 @@ namespace ComicBookShared.Data
             //    .Where(cb => cb.Id == id)
             //    .SingleOrDefault();
         }
-        
+
         public void Delete(int id, byte[] rowVersion)
         {
             var comicBook = new ComicBook()
@@ -88,7 +90,7 @@ namespace ComicBookShared.Data
                                             cb.SeriesId == comicBook.SeriesId &&
                                             cb.IssueNumber == comicBook.IssueNumber);
         }
-        
+
         public bool ValidateDuplicateArtist(int ComicBookId, int ArtistId, int RoleId)
         {
             return Context.ComicBookArtists
