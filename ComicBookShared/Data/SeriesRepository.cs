@@ -54,6 +54,25 @@ namespace ComicBookShared.Data
             //    .ToList();
         }
 
+        public override void Add(Series entity)
+        {
+            base.Add(entity);
+
+            EntityCache.Remove(SeriesListKey);
+        }
+
+        public override void Update(Series entity)
+        {
+            base.Update(entity);
+
+            EntityCache.Remove(SeriesListKey);
+        }
+
+        public override void Delete(int id)
+        {
+            base.Delete(id);
+            EntityCache.Remove(SeriesListKey);
+        }
         public bool SeriesHasTitle(int seriesId, string title)
         {
             return Context.Series
